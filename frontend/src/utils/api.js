@@ -28,7 +28,17 @@ api.interceptors.request.use(
 // Authentication API calls
 export const loginUser = async (email, password) => {
   try {
-    const response = await api.post('/auth/login', { email, password });
+    // Use URLSearchParams to create form-encoded data
+    const formData = new URLSearchParams();
+    // The backend expects 'username' for OAuth2 compatibility, even though it's an email
+    formData.append('username', email);
+    formData.append('password', password);
+
+    const response = await axios.post(`${API_URL}/auth/login`, formData, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    });
     return response.data;
   } catch (error) {
     throw error.response ? error.response.data : new Error('Login failed');
