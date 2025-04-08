@@ -1,139 +1,111 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import { FiPieChart, FiPlus, FiList, FiSettings, FiLogOut } from 'react-icons/fi';
 
 const Dashboard = () => {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('summary');
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
 
   // Placeholder data for demonstration
   const recentTrades = [
-    { id: 1, symbol: 'AAPL', type: 'Buy', entry: 180.25, exit: 185.75, profit: "+$550", date: '2023-06-15' },
-    { id: 2, symbol: 'TSLA', type: 'Sell', entry: 242.10, exit: 235.50, profit: "+$660", date: '2023-06-14' },
-    { id: 3, symbol: 'MSFT', type: 'Buy', entry: 335.80, exit: 332.20, profit: "-$360", date: '2023-06-13' },
+    { id: 1, symbol: 'AAPL', type: 'Buy', entry: 180.25, exit: 185.75, profit: 550, date: '2023-06-15' },
+    { id: 2, symbol: 'TSLA', type: 'Sell', entry: 242.10, exit: 235.50, profit: 660, date: '2023-06-14' },
+    { id: 3, symbol: 'MSFT', type: 'Buy', entry: 335.80, exit: 332.20, profit: -360, date: '2023-06-13' },
   ];
 
   return (
-    <div className="dashboard-layout">
-      <aside className="dashboard-sidebar">
-        <div className="sidebar-header">
-          <h1 className="app-name">Trading Journal</h1>
-        </div>
-        
-        <nav className="sidebar-nav">
-          <button 
-            className={`nav-item ${activeTab === 'summary' ? 'active' : ''}`}
-            onClick={() => setActiveTab('summary')}
-          >
-            <FiPieChart /> Summary
-          </button>
-          <button 
-            className={`nav-item ${activeTab === 'trades' ? 'active' : ''}`}
-            onClick={() => setActiveTab('trades')}
-          >
-            <FiList /> Trades
-          </button>
-          <button 
-            className={`nav-item ${activeTab === 'add' ? 'active' : ''}`}
-            onClick={() => setActiveTab('add')}
-          >
-            <FiPlus /> Add Trade
-          </button>
-          <button 
-            className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`}
-            onClick={() => setActiveTab('settings')}
-          >
-            <FiSettings /> Settings
-          </button>
+    <div className="bg-white rounded-lg shadow overflow-hidden">
+      {/* Dashboard Header */}
+      <div className="p-6 border-b border-gray-200">
+        <h1 className="text-2xl font-bold text-gray-800">Dashboard Overview</h1>
+        <p className="text-gray-600">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+      </div>
+
+      {/* Dashboard Tabs */}
+      <div className="border-b border-gray-200">
+        <nav className="flex -mb-px overflow-x-auto">
+          {['summary', 'trades', 'add', 'settings'].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${
+                activeTab === tab
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+            </button>
+          ))}
         </nav>
-        
-        <div className="sidebar-footer">
-          <button onClick={handleLogout} className="logout-button">
-            <FiLogOut /> Logout
-          </button>
-        </div>
-      </aside>
-      
-      <main className="dashboard-main">
-        <header className="dashboard-header">
-          <div className="user-welcome">
-            <h2>Welcome, {user?.username}!</h2>
-            <p>{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-          </div>
-        </header>
-        
-        <div className="dashboard-content">
-          {activeTab === 'summary' && (
-            <div className="summary-tab">
-              <div className="stats-grid">
-                <div className="stat-card">
-                  <h3>Total Profit/Loss</h3>
-                  <p className="stat-value profit">+$850</p>
-                  <p className="stat-detail">Month to date</p>
-                </div>
-                <div className="stat-card">
-                  <h3>Win Rate</h3>
-                  <p className="stat-value">67%</p>
-                  <p className="stat-detail">24 out of 36 trades</p>
-                </div>
-                <div className="stat-card">
-                  <h3>Average Win</h3>
-                  <p className="stat-value profit">+$425</p>
-                  <p className="stat-detail">Per winning trade</p>
-                </div>
-                <div className="stat-card">
-                  <h3>Average Loss</h3>
-                  <p className="stat-value loss">-$210</p>
-                  <p className="stat-detail">Per losing trade</p>
-                </div>
+      </div>
+
+      {/* Dashboard Content */}
+      <div className="p-6">
+        {activeTab === 'summary' && (
+          <div>
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                <h3 className="text-sm font-medium text-gray-500">Total Profit/Loss</h3>
+                <p className="text-2xl font-bold text-success">+$850</p>
+                <p className="text-xs text-gray-500">Month to date</p>
               </div>
-              
-              <div className="recent-trades-section">
-                <h3>Recent Trades</h3>
-                <div className="table-container">
-                  <table className="trades-table">
-                    <thead>
-                      <tr>
-                        <th>Symbol</th>
-                        <th>Type</th>
-                        <th>Entry</th>
-                        <th>Exit</th>
-                        <th>Profit/Loss</th>
-                        <th>Date</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {recentTrades.map(trade => (
-                        <tr key={trade.id}>
-                          <td>{trade.symbol}</td>
-                          <td>{trade.type}</td>
-                          <td>${trade.entry}</td>
-                          <td>${trade.exit}</td>
-                          <td className={trade.profit.startsWith('+') ? 'profit' : 'loss'}>
-                            {trade.profit}
-                          </td>
-                          <td>{trade.date}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                <h3 className="text-sm font-medium text-gray-500">Win Rate</h3>
+                <p className="text-2xl font-bold text-gray-800">67%</p>
+                <p className="text-xs text-gray-500">24 out of 36 trades</p>
+              </div>
+              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                <h3 className="text-sm font-medium text-gray-500">Average Win</h3>
+                <p className="text-2xl font-bold text-success">+$425</p>
+                <p className="text-xs text-gray-500">Per winning trade</p>
+              </div>
+              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                <h3 className="text-sm font-medium text-gray-500">Average Loss</h3>
+                <p className="text-2xl font-bold text-error">-$210</p>
+                <p className="text-xs text-gray-500">Per losing trade</p>
               </div>
             </div>
-          )}
-          
-          {activeTab === 'trades' && <div className="trades-tab"><h3>All Trades</h3><p>Detailed trade history will appear here.</p></div>}
-          {activeTab === 'add' && <div className="add-tab"><h3>Add New Trade</h3><p>Trade entry form will appear here.</p></div>}
-          {activeTab === 'settings' && <div className="settings-tab"><h3>Account Settings</h3><p>Settings options will appear here.</p></div>}
-        </div>
-      </main>
+
+            {/* Recent Trades */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Recent Trades</h3>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Symbol</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Entry</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Exit</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Profit/Loss</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {recentTrades.map((trade) => (
+                      <tr key={trade.id}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{trade.symbol}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{trade.type}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${trade.entry}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${trade.exit}</td>
+                        <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${trade.profit >= 0 ? 'text-success' : 'text-error'}`}>
+                          {trade.profit >= 0 ? '+' : ''}{`$${trade.profit}`}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{trade.date}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'trades' && <div className="py-4"><h3 className="text-lg font-semibold mb-2">All Trades</h3><p>Detailed trade history will appear here.</p></div>}
+        {activeTab === 'add' && <div className="py-4"><h3 className="text-lg font-semibold mb-2">Add New Trade</h3><p>Trade entry form will appear here.</p></div>}
+        {activeTab === 'settings' && <div className="py-4"><h3 className="text-lg font-semibold mb-2">Account Settings</h3><p>Settings options will appear here.</p></div>}
+      </div>
     </div>
   );
 };

@@ -1,5 +1,9 @@
 /* Basic styling for the authentication system */
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   --primary-color: #3a6ff7;
   --secondary-color: #f5f5f5;
