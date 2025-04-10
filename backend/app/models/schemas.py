@@ -24,3 +24,23 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: str | None = None
+
+# Account schemas
+class AccountBase(BaseModel):
+    account_name: str
+    purpose: str
+    broker: str
+    account_balance: float
+
+class AccountCreate(AccountBase):
+    pass
+
+class AccountUpdate(AccountBase):
+    pass
+
+class Account(AccountBase):
+    id: int
+    user_id: int
+
+    class Config:
+        from_attributes = True

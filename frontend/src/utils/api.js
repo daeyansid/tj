@@ -63,4 +63,50 @@ export const getUserProfile = async () => {
   }
 };
 
+// Account API calls
+export const getAccounts = async () => {
+  try {
+    const response = await api.get('/accounts');
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error('Failed to fetch accounts');
+  }
+};
+
+export const getAccount = async (id) => {
+  try {
+    const response = await api.get(`/accounts/${id}`);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error('Failed to fetch account');
+  }
+};
+
+export const createAccount = async (accountData) => {
+  try {
+    const response = await api.post('/accounts', accountData);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error('Failed to create account');
+  }
+};
+
+export const updateAccount = async (id, accountData) => {
+  try {
+    const response = await api.put(`/accounts/${id}`, accountData);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error('Failed to update account');
+  }
+};
+
+export const deleteAccount = async (id) => {
+  try {
+    await api.delete(`/accounts/${id}`);
+    return true;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error('Failed to delete account');
+  }
+};
+
 export default api;

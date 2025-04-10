@@ -6,6 +6,9 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import HeatMap from './pages/HeatMap';
+import Accounts from './pages/Accounts';
+import AccountForm from './pages/AccountForm';
+import AccountDetail from './pages/AccountDetail';
 import ProtectedRoute from './components/ProtectedRoute';
 import Topbar from './components/Topbar';
 import './index.css'; // Ensure this is importing the file with Tailwind directives
@@ -51,6 +54,10 @@ function App() {
               <Route element={<ProtectedRoute />}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/heatmap" element={<HeatMap />} />
+                <Route path="/accounts" element={<Accounts />} />
+                <Route path="/accounts/new" element={<AccountForm />} />
+                <Route path="/accounts/:id" element={<AccountDetail />} />
+                <Route path="/accounts/:id/edit" element={<AccountForm />} />
               </Route>
             </Routes>
           </div>

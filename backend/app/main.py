@@ -1,11 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database.database import engine
-from app.models import user
-from app.routes import auth, users
+from app.models import user, account
+from app.routes import auth, users, accounts
 
 # Create database tables
 user.Base.metadata.create_all(bind=engine)
+account.Base.metadata.create_all(bind=engine)
 
 # Create FastAPI app
 app = FastAPI(title="Token Auth API")
@@ -27,6 +28,7 @@ app.add_middleware(
 # Include routers
 app.include_router(auth.router)
 app.include_router(users.router)
+app.include_router(accounts.router)
 
 @app.get("/")
 async def root():
