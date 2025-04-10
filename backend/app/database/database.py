@@ -15,6 +15,13 @@ SQLALCHEMY_DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{PO
 # Create SQLAlchemy engine
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 
+# Test database connection
+try:
+    with engine.connect() as connection:
+        print("Database connection successful!")
+except Exception as e:
+    print(f"Database connection failed: {e}")
+
 # Create SessionLocal class
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
