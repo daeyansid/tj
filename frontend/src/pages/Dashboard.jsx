@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { getAccounts, getTradingDailyBooks } from '../utils/api';
+import { format, parseISO } from 'date-fns';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -9,101 +11,129 @@ const Dashboard = () => {
   const tradingViewRef = useRef(null);
   const bitcoinWidgetRef = useRef(null);
   const tickersWidgetRef = useRef(null);
-
-  // Placeholder data for demonstration
-  const recentTrades = [
-    { id: 1, symbol: 'AAPL', type: 'Buy', entry: 180.25, exit: 185.75, profit: 550, date: '2023-06-15' },
-    { id: 2, symbol: 'TSLA', type: 'Sell', entry: 242.10, exit: 235.50, profit: 660, date: '2023-06-14' },
-    { id: 3, symbol: 'MSFT', type: 'Buy', entry: 335.80, exit: 332.20, profit: -360, date: '2023-06-13' },
-  ];
-
-  /*
-  // Load TradingView Gold widget - Commented out for now
+  
+  // Add state for real data
+  const [accounts, setAccounts] = useState([]);
+  const [tradingBooks, setTradingBooks] = useState([]);
+  const [recentTrades, setRecentTrades] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalAccounts: 0,
+    totalTrades: 0,
+    winRate: 0,
+    winCount: 0,
+    lossCount: 0,
+    totalProfit: 0,
+    averageWin: 0,
+    averageLoss: 0
+  });
+  
+  // Fetch accounts and trading data
   useEffect(() => {
-    if (activeTab === 'summary' && tradingViewRef.current) {
-      tradingViewRef.current.innerHTML = '';
-      const widgetContainer = document.createElement('div');
-      const copyrightElement = document.createElement('div');
-      copyrightElement.className = 'tradingview-widget-copyright';
-      const link = document.createElement('a');
-      link.href = 'https://www.tradingview.com/';
-      link.rel = 'noopener nofollow';
-      link.target = '_blank';
-      const span = document.createElement('span');
-      span.className = 'blue-text';
-      span.textContent = 'Track all markets on TradingView';
-      link.appendChild(span);
-      copyrightElement.appendChild(link);
-      tradingViewRef.current.appendChild(widgetContainer);
-      tradingViewRef.current.appendChild(copyrightElement);
-      const script = document.createElement('script');
-      script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js';
-      script.async = true;
-      script.type = 'text/javascript';
-      script.innerHTML = JSON.stringify({
-        symbol: "OANDA:XAUUSD",
-        width: "100%",
-        height: "100%",
-        locale: "en",
-        dateRange: "12M",
-        colorTheme: darkMode ? "dark" : "light",
-        isTransparent: false,
-        autosize: true,
-        largeChartUrl: ""
-      });
-      tradingViewRef.current.appendChild(script);
-    }
-    return () => {
-      if (tradingViewRef.current) {
-        tradingViewRef.current.innerHTML = '';
+    const fetchData = async () => {
+      try {
+        const accountsData = await getAccounts();
+        const booksData = await getTradingDailyBooks();
+        
+        setAccounts(accountsData);
+        setTradingBooks(booksData);
+        
+        // Calculate statistics
+        calculateStats(accountsData, booksData);
+        
+        // Process recent trades
+        processRecentTrades(booksData);
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      } finally {
+        setLoading(false);
       }
     };
-  }, [activeTab, darkMode]);
+    
+    fetchData();
+  }, []);
 
-  // Load TradingView Bitcoin widget - Commented out for now
-  useEffect(() => {
-    if (activeTab === 'summary' && bitcoinWidgetRef.current) {
-      bitcoinWidgetRef.current.innerHTML = '';
-      const widgetContainer = document.createElement('div');
-      const copyrightElement = document.createElement('div');
-      copyrightElement.className = 'tradingview-widget-copyright';
-      const link = document.createElement('a');
-      link.href = 'https://www.tradingview.com/';
-      link.rel = 'noopener nofollow';
-      link.target = '_blank';
-      const span = document.createElement('span');
-      span.className = 'blue-text';
-      span.textContent = 'Track all markets on TradingView';
-      link.appendChild(span);
-      copyrightElement.appendChild(link);
-      bitcoinWidgetRef.current.appendChild(widgetContainer);
-      bitcoinWidgetRef.current.appendChild(copyrightElement);
-      const script = document.createElement('script');
-      script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js';
-      script.async = true;
-      script.type = 'text/javascript';
-      script.innerHTML = JSON.stringify({
-        symbol: "BINANCE:BTCUSDT",
-        width: "100%",
-        height: "100%",
-        locale: "en",
-        dateRange: "12M",
-        colorTheme: darkMode ? "dark" : "light",
-        isTransparent: false,
-        autosize: true,
-        largeChartUrl: "",
-        chartOnly: false
-      });
-      bitcoinWidgetRef.current.appendChild(script);
-    }
-    return () => {
-      if (bitcoinWidgetRef.current) {
-        bitcoinWidgetRef.current.innerHTML = '';
-      }
-    };
-  }, [activeTab, darkMode]);
-  */
+  // Function to process recent trades from trading books
+  const processRecentTrades = (books) => {
+    // Filter books with actual trades (not "No Trade" or "No Result")
+    const tradesBooks = books.filter(book => 
+      book.result !== "No Trade" && book.result !== "No Result"
+    );
+    
+    // Sort by date descending (most recent first)
+    const sortedBooks = [...tradesBooks].sort((a, b) => 
+      new Date(b.date) - new Date(a.date)
+    );
+    
+    // Take up to 10 recent trades
+    const recentBooks = sortedBooks.slice(0, 10);
+    
+    // Transform to the format needed for the table
+    const trades = recentBooks.map((book, index) => {
+      const profitLoss = book.ending_balance - book.starting_balance - book.withdraw;
+      const formattedDate = format(parseISO(book.date), 'yyyy-MM-dd');
+      
+      return {
+        id: book.id,
+        symbol: book.account ? book.account.broker : 'Unknown',
+        type: book.result,
+        entry: book.starting_balance.toFixed(2),
+        exit: book.ending_balance.toFixed(2),
+        profit: profitLoss,
+        date: formattedDate
+      };
+    });
+    
+    setRecentTrades(trades);
+  };
 
+  // Function to calculate statistics
+  const calculateStats = (accounts, books) => {
+    const totalAccounts = accounts.length;
+    
+    // Filter books with trade results
+    const tradesBooks = books.filter(book => book.result !== "No Trade" && book.result !== "No Result");
+    const totalTrades = tradesBooks.length;
+    
+    // Calculate win rate
+    const winningTrades = tradesBooks.filter(book => book.result === "Profit Overall");
+    const winCount = winningTrades.length;
+    const lossCount = tradesBooks.filter(book => book.result === "Loss Overall").length;
+    const winRate = totalTrades > 0 ? (winCount / totalTrades) * 100 : 0;
+    
+    // Calculate profit/loss
+    const totalProfit = tradesBooks.reduce((sum, book) => {
+      const profitLoss = book.ending_balance - book.starting_balance - book.withdraw;
+      return sum + profitLoss;
+    }, 0);
+    
+    // Calculate average win/loss
+    const winningTradesProfit = winningTrades.reduce((sum, book) => {
+      const profit = book.ending_balance - book.starting_balance - book.withdraw;
+      return sum + profit;
+    }, 0);
+    
+    const losingTrades = tradesBooks.filter(book => book.result === "Loss Overall");
+    const losingTradesLoss = losingTrades.reduce((sum, book) => {
+      const loss = book.starting_balance - book.ending_balance + book.withdraw;
+      return sum + Math.abs(loss);
+    }, 0);
+    
+    const averageWin = winningTrades.length > 0 ? winningTradesProfit / winningTrades.length : 0;
+    const averageLoss = losingTrades.length > 0 ? losingTradesLoss / losingTrades.length : 0;
+    
+    setStats({
+      totalAccounts,
+      totalTrades,
+      winRate,
+      winCount,
+      lossCount,
+      totalProfit,
+      averageWin,
+      averageLoss
+    });
+  };
+  
   // Load TradingView Tickers widget
   useEffect(() => {
     if (activeTab === 'summary' && tickersWidgetRef.current) {
@@ -191,88 +221,129 @@ const Dashboard = () => {
       <div className="p-6">
         {activeTab === 'summary' && (
           <div>
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600">
-                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-300">Total Profit/Loss</h3>
-                <p className="text-2xl font-bold text-success">+$850</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Month to date</p>
+            {loading ? (
+              <div className="text-center py-10">
+                <p className="text-gray-600 dark:text-gray-400">Loading dashboard data...</p>
               </div>
-              <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600">
-                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-300">Win Rate</h3>
-                <p className="text-2xl font-bold text-gray-800 dark:text-white">67%</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">24 out of 36 trades</p>
-              </div>
-              <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600">
-                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-300">Average Win</h3>
-                <p className="text-2xl font-bold text-success">+$425</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Per winning trade</p>
-              </div>
-              <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600">
-                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-300">Average Loss</h3>
-                <p className="text-2xl font-bold text-error">-$210</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Per losing trade</p>
-              </div>
-            </div>
+            ) : (
+              <>
+                {/* Stats Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                  <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600">
+                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-300">Total Accounts</h3>
+                    <p className="text-2xl font-bold text-gray-800 dark:text-white">{stats.totalAccounts}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Trading accounts</p>
+                  </div>
+                  <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600">
+                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-300">Total P/L</h3>
+                    <p className={`text-2xl font-bold ${stats.totalProfit >= 0 ? 'text-success' : 'text-error'}`}>
+                      {stats.totalProfit >= 0 ? '+' : ''}{`$${stats.totalProfit.toFixed(2)}`}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">From {stats.totalTrades} trades</p>
+                  </div>
+                  <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600">
+                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-300">Win Rate</h3>
+                    <p className="text-2xl font-bold text-gray-800 dark:text-white">{stats.winRate.toFixed(0)}%</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{stats.winCount} wins, {stats.lossCount} losses</p>
+                  </div>
+                  <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600">
+                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-300">Avg Win/Loss</h3>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-success">+${stats.averageWin.toFixed(2)}</span>
+                      <span>/</span>
+                      <span className="text-error">-${stats.averageLoss.toFixed(2)}</span>
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Win/loss ratio</p>
+                  </div>
+                </div>
 
-            {/* TradingView Tickers Widget */}
-            <div className="mb-8">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Market Overview</h3>
-              <div className="bg-white dark:bg-gray-700 p-2 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600">
-                <div ref={tickersWidgetRef} className="tradingview-widget-container"></div>
-              </div>
-            </div>
+                {/* Second row stats */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                  <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600">
+                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-300">Total Trades</h3>
+                    <p className="text-2xl font-bold text-gray-800 dark:text-white">{stats.totalTrades}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Trading sessions</p>
+                  </div>
+                  <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600">
+                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-300">Profit Factor</h3>
+                    <p className="text-2xl font-bold text-gray-800 dark:text-white">
+                      {stats.averageLoss > 0 ? (stats.averageWin / stats.averageLoss).toFixed(2) : 'N/A'}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Avg Win ÷ Avg Loss</p>
+                  </div>
+                  <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600">
+                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-300">Last Trade</h3>
+                    <p className={`text-2xl font-bold ${tradingBooks.length > 0 && (tradingBooks[0].ending_balance - tradingBooks[0].starting_balance - tradingBooks[0].withdraw) >= 0 ? 'text-success' : 'text-error'}`}>
+                      {tradingBooks.length > 0 ? (
+                        <>
+                          {(tradingBooks[0].ending_balance - tradingBooks[0].starting_balance - tradingBooks[0].withdraw) >= 0 ? '+' : ''}
+                          ${(tradingBooks[0].ending_balance - tradingBooks[0].starting_balance - tradingBooks[0].withdraw).toFixed(2)}
+                        </>
+                      ) : 'No trades'}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {tradingBooks.length > 0 ? new Date(tradingBooks[0].date).toLocaleDateString() : ''}
+                    </p>
+                  </div>
+                </div>
 
-            {/* Commented out Gold Widget
-            <div className="mb-8">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Gold (XAU/USD)</h3>
-              <div className="bg-white dark:bg-gray-700 p-2 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600" style={{ height: "300px" }}>
-                <div ref={tradingViewRef} className="tradingview-widget-container h-full"></div>
-              </div>
-            </div>
-            */}
+                {/* TradingView Tickers Widget */}
+                <div className="mb-8">
+                  <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Market Overview</h3>
+                  <div className="bg-white dark:bg-gray-700 p-2 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600">
+                    <div ref={tickersWidgetRef} className="tradingview-widget-container"></div>
+                  </div>
+                </div>
 
-            {/* Commented out Bitcoin Widget
-            <div className="mb-8">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Bitcoin (BTC/USDT)</h3>
-              <div className="bg-white dark:bg-gray-700 p-2 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600" style={{ height: "300px" }}>
-                <div ref={bitcoinWidgetRef} className="tradingview-widget-container h-full"></div>
-              </div>
-            </div>
-            */}
-
-            {/* Recent Trades */}
-            <div>
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Recent Trades</h3>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                  <thead className="bg-gray-50 dark:bg-gray-800">
-                    <tr>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Symbol</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Entry</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Exit</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Profit/Loss</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white dark:bg-gray-700 divide-y divide-gray-200 dark:divide-gray-700">
-                    {recentTrades.map((trade) => (
-                      <tr key={trade.id}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-white">{trade.symbol}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">{trade.type}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">${trade.entry}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">${trade.exit}</td>
-                        <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${trade.profit >= 0 ? 'text-success' : 'text-error'}`}>
-                          {trade.profit >= 0 ? '+' : ''}{`$${trade.profit}`}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">{trade.date}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+                {/* Recent Trades */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Recent Trades (Last {recentTrades.length > 0 ? recentTrades.length : '0'})</h3>
+                  
+                  {recentTrades.length === 0 ? (
+                    <div className="bg-white dark:bg-gray-700 p-4 rounded-lg text-center text-gray-600 dark:text-gray-300">
+                      No trades recorded yet. Create your first trading daily book entry to get started.
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead className="bg-gray-50 dark:bg-gray-800">
+                          <tr>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Account</th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Result</th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Starting</th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Ending</th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Profit/Loss</th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white dark:bg-gray-700 divide-y divide-gray-200 dark:divide-gray-700">
+                          {recentTrades.map((trade) => (
+                            <tr key={trade.id} className={trade.profit >= 0 ? "bg-green-50 dark:bg-green-900/10" : "bg-red-50 dark:bg-red-900/10"}>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">{trade.date}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-white">{trade.symbol}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                  trade.type === "Profit Overall" ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400" : 
+                                  trade.type === "Loss Overall" ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400" :
+                                  "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
+                                }`}>
+                                  {trade.type}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">${trade.entry}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">${trade.exit}</td>
+                              <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${trade.profit >= 0 ? 'text-success' : 'text-error'}`}>
+                                {trade.profit >= 0 ? '+' : ''}{`$${trade.profit.toFixed(2)}`}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         )}
 
