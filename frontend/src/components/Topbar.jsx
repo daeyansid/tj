@@ -19,6 +19,7 @@ const Topbar = () => {
           {/* Desktop menu */}
           <div className="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-4">
             <Link to="/" className="px-3 py-2 text-gray-700 hover:text-primary">Home</Link>
+            <Link to="/heatmap" className="px-3 py-2 text-gray-700 hover:text-primary">Heatmap</Link>
             
             {isAuthenticated ? (
               <>
@@ -71,6 +72,13 @@ const Topbar = () => {
               className="block px-3 py-2 text-gray-700 hover:text-primary"
             >
               Home
+            </Link>
+            <Link 
+              to="/heatmap"
+              onClick={() => setMobileMenuOpen(false)} 
+              className="block px-3 py-2 text-gray-700 hover:text-primary"
+            >
+              Heatmap
             </Link>
             
             {isAuthenticated ? (
