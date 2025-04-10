@@ -32,3 +32,18 @@ class TradingDailyBook(Base):
     # Relationships
     account = relationship("Account", back_populates="daily_books")
     user = relationship("User", back_populates="daily_books")
+    
+    @classmethod
+    def from_dict(cls, data_dict, **kwargs):
+        """
+        Create a model instance from a dictionary, with the ability to override fields.
+        Any kwargs will override values in the data_dict.
+        """
+        # Create a copy to avoid modifying the original
+        merged_dict = data_dict.copy()
+        
+        # Override with any provided kwargs
+        for key, value in kwargs.items():
+            merged_dict[key] = value
+            
+        return cls(**merged_dict)

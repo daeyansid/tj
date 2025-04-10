@@ -79,9 +79,20 @@ def create_trading_daily_book(
     # Auto-fill starting balance from account
     starting_balance = account.account_balance
     
-    # Create new book entry
+    # Create new book entry - handle both Pydantic v1 and v2
+    if hasattr(book_data, "model_dump"):
+        # Pydantic v2
+        book_data_dict = book_data.model_dump()
+    else:
+        # Pydantic v1
+        book_data_dict = book_data.dict()
+    
+    # Remove starting_balance if it exists in the dict to avoid duplication
+    if 'starting_balance' in book_data_dict:
+        book_data_dict.pop('starting_balance')
+    
     db_book = TradingDailyBook(
-        **book_data.dict(),
+        **book_data_dict,
         starting_balance=starting_balance,
         user_id=current_user.id
     )
