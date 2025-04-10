@@ -8,6 +8,7 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('summary');
   const tradingViewRef = useRef(null);
   const bitcoinWidgetRef = useRef(null);
+  const tickersWidgetRef = useRef(null);
 
   // Placeholder data for demonstration
   const recentTrades = [
@@ -16,37 +17,29 @@ const Dashboard = () => {
     { id: 3, symbol: 'MSFT', type: 'Buy', entry: 335.80, exit: 332.20, profit: -360, date: '2023-06-13' },
   ];
 
-  // Load TradingView Gold widget
+  /*
+  // Load TradingView Gold widget - Commented out for now
   useEffect(() => {
     if (activeTab === 'summary' && tradingViewRef.current) {
-      // Clear any existing widgets
       tradingViewRef.current.innerHTML = '';
-      
       const widgetContainer = document.createElement('div');
       const copyrightElement = document.createElement('div');
       copyrightElement.className = 'tradingview-widget-copyright';
-      
       const link = document.createElement('a');
       link.href = 'https://www.tradingview.com/';
       link.rel = 'noopener nofollow';
       link.target = '_blank';
-      
       const span = document.createElement('span');
       span.className = 'blue-text';
       span.textContent = 'Track all markets on TradingView';
-      
       link.appendChild(span);
       copyrightElement.appendChild(link);
-      
       tradingViewRef.current.appendChild(widgetContainer);
       tradingViewRef.current.appendChild(copyrightElement);
-      
       const script = document.createElement('script');
       script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js';
       script.async = true;
       script.type = 'text/javascript';
-      
-      // Configure the widget
       script.innerHTML = JSON.stringify({
         symbol: "OANDA:XAUUSD",
         width: "100%",
@@ -58,11 +51,8 @@ const Dashboard = () => {
         autosize: true,
         largeChartUrl: ""
       });
-      
       tradingViewRef.current.appendChild(script);
     }
-    
-    // Cleanup function
     return () => {
       if (tradingViewRef.current) {
         tradingViewRef.current.innerHTML = '';
@@ -70,37 +60,28 @@ const Dashboard = () => {
     };
   }, [activeTab, darkMode]);
 
-  // Load TradingView Bitcoin widget
+  // Load TradingView Bitcoin widget - Commented out for now
   useEffect(() => {
     if (activeTab === 'summary' && bitcoinWidgetRef.current) {
-      // Clear any existing widgets
       bitcoinWidgetRef.current.innerHTML = '';
-      
       const widgetContainer = document.createElement('div');
       const copyrightElement = document.createElement('div');
       copyrightElement.className = 'tradingview-widget-copyright';
-      
       const link = document.createElement('a');
       link.href = 'https://www.tradingview.com/';
       link.rel = 'noopener nofollow';
       link.target = '_blank';
-      
       const span = document.createElement('span');
       span.className = 'blue-text';
       span.textContent = 'Track all markets on TradingView';
-      
       link.appendChild(span);
       copyrightElement.appendChild(link);
-      
       bitcoinWidgetRef.current.appendChild(widgetContainer);
       bitcoinWidgetRef.current.appendChild(copyrightElement);
-      
       const script = document.createElement('script');
       script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js';
       script.async = true;
       script.type = 'text/javascript';
-      
-      // Configure the widget
       script.innerHTML = JSON.stringify({
         symbol: "BINANCE:BTCUSDT",
         width: "100%",
@@ -113,14 +94,68 @@ const Dashboard = () => {
         largeChartUrl: "",
         chartOnly: false
       });
-      
       bitcoinWidgetRef.current.appendChild(script);
     }
-    
-    // Cleanup function
     return () => {
       if (bitcoinWidgetRef.current) {
         bitcoinWidgetRef.current.innerHTML = '';
+      }
+    };
+  }, [activeTab, darkMode]);
+  */
+
+  // Load TradingView Tickers widget
+  useEffect(() => {
+    if (activeTab === 'summary' && tickersWidgetRef.current) {
+      tickersWidgetRef.current.innerHTML = '';
+      const widgetContainer = document.createElement('div');
+      widgetContainer.className = 'tradingview-widget-container__widget';
+      const copyrightElement = document.createElement('div');
+      copyrightElement.className = 'tradingview-widget-copyright';
+      const link = document.createElement('a');
+      link.href = 'https://www.tradingview.com/';
+      link.rel = 'noopener nofollow';
+      link.target = '_blank';
+      const span = document.createElement('span');
+      span.className = 'blue-text';
+      span.textContent = 'Track all markets on TradingView';
+      link.appendChild(span);
+      copyrightElement.appendChild(link);
+      tickersWidgetRef.current.appendChild(widgetContainer);
+      tickersWidgetRef.current.appendChild(copyrightElement);
+      const script = document.createElement('script');
+      script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-tickers.js';
+      script.async = true;
+      script.type = 'text/javascript';
+      script.innerHTML = JSON.stringify({
+        symbols: [
+          {
+            description: "",
+            proName: "BINANCE:BTCUSDT"
+          },
+          {
+            description: "",
+            proName: "OANDA:XAUUSD"
+          },
+          {
+            description: "",
+            proName: "BLACKBULL:US30"
+          },
+          {
+            description: "",
+            proName: "CAPITALCOM:DXY"
+          }
+        ],
+        isTransparent: false,
+        showSymbolLogo: true,
+        colorTheme: darkMode ? "dark" : "light",
+        locale: "en"
+      });
+      tickersWidgetRef.current.appendChild(script);
+    }
+    return () => {
+      if (tickersWidgetRef.current) {
+        tickersWidgetRef.current.innerHTML = '';
       }
     };
   }, [activeTab, darkMode]);
@@ -180,21 +215,31 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* TradingView Gold Widget */}
+            {/* TradingView Tickers Widget */}
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Market Overview</h3>
+              <div className="bg-white dark:bg-gray-700 p-2 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600">
+                <div ref={tickersWidgetRef} className="tradingview-widget-container"></div>
+              </div>
+            </div>
+
+            {/* Commented out Gold Widget
             <div className="mb-8">
               <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Gold (XAU/USD)</h3>
               <div className="bg-white dark:bg-gray-700 p-2 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600" style={{ height: "300px" }}>
                 <div ref={tradingViewRef} className="tradingview-widget-container h-full"></div>
               </div>
             </div>
+            */}
 
-            {/* TradingView Bitcoin Widget */}
+            {/* Commented out Bitcoin Widget
             <div className="mb-8">
               <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Bitcoin (BTC/USDT)</h3>
               <div className="bg-white dark:bg-gray-700 p-2 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600" style={{ height: "300px" }}>
                 <div ref={bitcoinWidgetRef} className="tradingview-widget-container h-full"></div>
               </div>
             </div>
+            */}
 
             {/* Recent Trades */}
             <div>
