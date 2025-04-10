@@ -26,6 +26,7 @@ const Topbar = () => {
                 <Link to="/dashboard" className="px-3 py-2 text-gray-700 hover:text-primary">Dashboard</Link>
                 <Link to="/accounts" className="px-3 py-2 text-gray-700 hover:text-primary">Accounts</Link>
                 <Link to="/trading-plans" className="px-3 py-2 text-gray-700 hover:text-primary">Trading Plans</Link>
+                <Link to="/trading-daily-books" className="px-3 py-2 text-gray-700 hover:text-primary">Daily Book</Link>
                 <div className="pl-4 border-l flex items-center">
                   <span className="text-gray-700 mr-4">Hello, {user?.username || 'User'}</span>
                   <button 
@@ -105,6 +106,13 @@ const Topbar = () => {
                   className="block px-3 py-2 text-gray-700 hover:text-primary"
                 >
                   Trading Plans
+                </Link>
+                <Link 
+                  to="/trading-daily-books"
+                  onClick={() => setMobileMenuOpen(false)}  
+                  className="block px-3 py-2 text-gray-700 hover:text-primary"
+                >
+                  Daily Book
                 </Link>
                 <div className="px-3 py-2 border-t">
                   <span className="block text-gray-700 mb-2">Hello, {user?.username || 'User'}</span>

@@ -14,3 +14,6 @@ class Account(Base):
     
     # Relationship with user
     user = relationship("User", back_populates="accounts")
+    
+    # Relationship with trading daily books
+    daily_books = relationship("TradingDailyBook", back_populates="account", cascade="all, delete-orphan")

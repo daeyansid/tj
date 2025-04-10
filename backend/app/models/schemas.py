@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr
 from datetime import date
 from typing import Optional
+from enum import Enum
 
 class UserBase(BaseModel):
     email: EmailStr
@@ -71,6 +72,54 @@ class TradingPlanUpdate(TradingPlanBase):
 class TradingPlan(TradingPlanBase):
     id: int
     user_id: int
+
+    class Config:
+        from_attributes = True
+
+# Trading Daily Book schemas
+class TradingResult(str, Enum):
+    LOSS_OVERALL = "Loss Overall"
+    PROFIT_OVERALL = "Profit Overall"
+    LIQUIDATED = "Liquidated"
+    BREAKEVEN = "Breakeven" 
+    NO_TRADE = "No Trade"
+    NO_RESULT = "No Result"
+
+class TradingDailyBookBase(BaseModel):
+    date: date
+    account_id: int
+    starting_balance: float
+    ending_balance: float
+    sentiment: Optional[str] = None
+    withdraw: float = 0.0
+    summary: Optional[str] = None
+    result: TradingResult = TradingResult.NO_RESULT
+    remarks: Optional[str] = None
+
+class TradingDailyBookCreate(TradingDailyBookBase):
+    pass
+
+class TradingDailyBookUpdate(BaseModel):
+    date: Optional[date] = None
+    account_id: Optional[int] = None
+    ending_balance: Optional[float] = None
+    sentiment: Optional[str] = None
+    withdraw: Optional[float] = None
+    summary: Optional[str] = None
+    result: Optional[TradingResult] = None
+    remarks: Optional[str] = None
+
+class TradingDailyBook(TradingDailyBookBase):
+    id: int
+    user_id: int
+
+    class Config:
+        from_attributes = True
+
+class AccountWithBalance(BaseModel):
+    id: int
+    account_name: str
+    account_balance: float
 
     class Config:
         from_attributes = True

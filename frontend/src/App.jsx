@@ -12,6 +12,9 @@ import AccountDetail from './pages/AccountDetail';
 import TradingPlans from './pages/TradingPlans';
 import TradingPlanForm from './pages/TradingPlanForm';
 import TradingPlanDetail from './pages/TradingPlanDetail';
+import TradingDailyBooks from './pages/TradingDailyBooks';
+import TradingDailyBookForm from './pages/TradingDailyBookForm';
+import TradingDailyBookDetail from './pages/TradingDailyBookDetail';
 import ProtectedRoute from './components/ProtectedRoute';
 import Topbar from './components/Topbar';
 import './index.css'; // Ensure this is importing the file with Tailwind directives
@@ -65,6 +68,10 @@ function App() {
                 <Route path="/trading-plans/new" element={<TradingPlanForm />} />
                 <Route path="/trading-plans/:id" element={<TradingPlanDetail />} />
                 <Route path="/trading-plans/:id/edit" element={<TradingPlanForm />} />
+                <Route path="/trading-daily-books" element={<TradingDailyBooks />} />
+                <Route path="/trading-daily-books/new" element={<TradingDailyBookForm />} />
+                <Route path="/trading-daily-books/:id" element={<TradingDailyBookDetail />} />
+                <Route path="/trading-daily-books/:id/edit" element={<TradingDailyBookForm />} />
               </Route>
             </Routes>
           </div>

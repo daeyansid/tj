@@ -164,4 +164,59 @@ export const toggleTradingPlanStatus = async (id) => {
   }
 };
 
+// Trading Daily Book API calls
+export const getTradingDailyBooks = async () => {
+  try {
+    const response = await api.get('/trading-daily-books');
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error('Failed to fetch trading daily books');
+  }
+};
+
+export const getTradingDailyBook = async (id) => {
+  try {
+    const response = await api.get(`/trading-daily-books/${id}`);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error('Failed to fetch trading daily book');
+  }
+};
+
+export const getAccountsWithBalance = async () => {
+  try {
+    const response = await api.get('/trading-daily-books/accounts');
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error('Failed to fetch accounts');
+  }
+};
+
+export const createTradingDailyBook = async (bookData) => {
+  try {
+    const response = await api.post('/trading-daily-books', bookData);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error('Failed to create trading daily book');
+  }
+};
+
+export const updateTradingDailyBook = async (id, bookData) => {
+  try {
+    const response = await api.put(`/trading-daily-books/${id}`, bookData);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error('Failed to update trading daily book');
+  }
+};
+
+export const deleteTradingDailyBook = async (id) => {
+  try {
+    await api.delete(`/trading-daily-books/${id}`);
+    return true;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error('Failed to delete trading daily book');
+  }
+};
+
 export default api;

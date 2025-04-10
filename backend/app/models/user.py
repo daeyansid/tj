@@ -14,3 +14,4 @@ class User(Base):
     # Relationships
     accounts = relationship("Account", back_populates="user")
     trading_plans = relationship("TradingPlan", back_populates="user")
+    daily_books = relationship("TradingDailyBook", back_populates="user")
