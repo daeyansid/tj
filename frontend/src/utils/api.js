@@ -109,4 +109,59 @@ export const deleteAccount = async (id) => {
   }
 };
 
+// Trading Plan API calls
+export const getTradingPlans = async () => {
+  try {
+    const response = await api.get('/trading-plans');
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error('Failed to fetch trading plans');
+  }
+};
+
+export const getTradingPlan = async (id) => {
+  try {
+    const response = await api.get(`/trading-plans/${id}`);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error('Failed to fetch trading plan');
+  }
+};
+
+export const createTradingPlan = async (planData) => {
+  try {
+    const response = await api.post('/trading-plans', planData);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error('Failed to create trading plan');
+  }
+};
+
+export const updateTradingPlan = async (id, planData) => {
+  try {
+    const response = await api.put(`/trading-plans/${id}`, planData);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error('Failed to update trading plan');
+  }
+};
+
+export const deleteTradingPlan = async (id) => {
+  try {
+    await api.delete(`/trading-plans/${id}`);
+    return true;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error('Failed to delete trading plan');
+  }
+};
+
+export const toggleTradingPlanStatus = async (id) => {
+  try {
+    const response = await api.patch(`/trading-plans/${id}/toggle-status`);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error('Failed to toggle trading plan status');
+  }
+};
+
 export default api;

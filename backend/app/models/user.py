@@ -11,5 +11,6 @@ class User(Base):
     hashed_password = Column(String)
     is_active = Column(Boolean, default=True)
     
-    # Add relationship to accounts
+    # Relationships
     accounts = relationship("Account", back_populates="user")
+    trading_plans = relationship("TradingPlan", back_populates="user")

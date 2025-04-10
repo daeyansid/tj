@@ -9,6 +9,9 @@ import HeatMap from './pages/HeatMap';
 import Accounts from './pages/Accounts';
 import AccountForm from './pages/AccountForm';
 import AccountDetail from './pages/AccountDetail';
+import TradingPlans from './pages/TradingPlans';
+import TradingPlanForm from './pages/TradingPlanForm';
+import TradingPlanDetail from './pages/TradingPlanDetail';
 import ProtectedRoute from './components/ProtectedRoute';
 import Topbar from './components/Topbar';
 import './index.css'; // Ensure this is importing the file with Tailwind directives
@@ -58,6 +61,10 @@ function App() {
                 <Route path="/accounts/new" element={<AccountForm />} />
                 <Route path="/accounts/:id" element={<AccountDetail />} />
                 <Route path="/accounts/:id/edit" element={<AccountForm />} />
+                <Route path="/trading-plans" element={<TradingPlans />} />
+                <Route path="/trading-plans/new" element={<TradingPlanForm />} />
+                <Route path="/trading-plans/:id" element={<TradingPlanDetail />} />
+                <Route path="/trading-plans/:id/edit" element={<TradingPlanForm />} />
               </Route>
             </Routes>
           </div>

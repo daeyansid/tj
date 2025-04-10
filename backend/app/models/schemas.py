@@ -1,4 +1,6 @@
 from pydantic import BaseModel, EmailStr
+from datetime import date
+from typing import Optional
 
 class UserBase(BaseModel):
     email: EmailStr
@@ -39,6 +41,34 @@ class AccountUpdate(AccountBase):
     pass
 
 class Account(AccountBase):
+    id: int
+    user_id: int
+
+    class Config:
+        from_attributes = True
+
+# Trading Plan schemas
+class TradingPlanBase(BaseModel):
+    day: str
+    account_balance: float
+    daily_target: float
+    required_lots: float
+    rounded_lots: float
+    risk_amount: float
+    risk_percentage: float
+    sl_pips: float
+    tp_pips: float
+    status: bool = False
+    reason: Optional[str] = None
+    plan_date: date
+
+class TradingPlanCreate(TradingPlanBase):
+    pass
+
+class TradingPlanUpdate(TradingPlanBase):
+    pass
+
+class TradingPlan(TradingPlanBase):
     id: int
     user_id: int
 
