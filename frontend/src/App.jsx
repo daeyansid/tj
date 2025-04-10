@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import HeatMap from './pages/HeatMap';
 import ProtectedRoute from './components/ProtectedRoute';
 import Topbar from './components/Topbar';
 import './index.css'; // Ensure this is importing the file with Tailwind directives
@@ -49,6 +50,7 @@ function App() {
               <Route path="/register" element={<Register />} />
               <Route element={<ProtectedRoute />}>
                 <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/heatmap" element={<HeatMap />} />
               </Route>
             </Routes>
           </div>

@@ -1,4 +1,5 @@
 import { useTheme } from '../context/ThemeContext';
+import { Link } from 'react-router-dom';
 
 const Navbar = () => {
   const { darkMode, toggleDarkMode } = useTheme();
@@ -11,9 +12,10 @@ const Navbar = () => {
           
           {/* Navigation links */}
           <div className="ml-10 space-x-4 hidden md:flex">
-            <a href="#" className="text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary">Home</a>
-            <a href="#" className="text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary">Dashboard</a>
-            <a href="#" className="text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary">Profile</a>
+            <Link to="/" className="text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary">Home</Link>
+            <Link to="/dashboard" className="text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary">Dashboard</Link>
+            <Link to="/heatmap" className="text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary">Heatmap</Link>
+            <Link to="/profile" className="text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary">Profile</Link>
           </div>
         </div>
         
